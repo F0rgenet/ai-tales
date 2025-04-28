@@ -22,7 +22,7 @@
 
 1. Клонируйте репозиторий:
    ```bash
-   git clone https://github.com/your-username/ai-tales.git
+   git clone https://github.com/F0rgenet/ai-tales.git
    cd ai-tales
    ```
 
