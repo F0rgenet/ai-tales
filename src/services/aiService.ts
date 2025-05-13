@@ -1,4 +1,4 @@
-'use client';
+// \'use client\'; // Удаляем эту строку
 
 import { 
   GoogleGenerativeAI, 
@@ -11,7 +11,7 @@ import { CharacterReplacement } from '@/components/CharacterReplacementTable';
 // Функция для создания промпта с инструкциями по замене персонажей
 function createPrompt(text: string, replacements: CharacterReplacement[], additionalContext?: string): string {
   const replacementText = replacements
-    .map(r => `\"${r.original}\" на \"${r.replacement}\"`)
+    .map(r => `\\"${r.original}\\" на \\"${r.replacement}\\"`)
     .join(', ');
 
   let promptText = `
@@ -65,13 +65,14 @@ export async function transformStory({
   replacements,
   additionalContext
 }: TransformStoryParams, 
-  settings?: AISettings
+  settings?: AISettings // settings может быть удален, если ключ всегда берется из process.env
 ): Promise<string> {
-  // Используем предустановленный API ключ из .env.local
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY || settings?.apiKey;
+  // Используем API ключ из переменных окружения сервера
+  const apiKey = process.env.GOOGLE_AI_API_KEY || settings?.apiKey; // Изменяем здесь
   
   // Проверяем наличие ключа API
   if (!apiKey) {
+    console.error('Google AI API key is not provided in server environment variables.');
     throw new Error('Google AI API key is not provided');
   }
 
@@ -80,7 +81,7 @@ export async function transformStory({
   
   // Получаем модель
   const model = genAI.getGenerativeModel({ 
-    model: "gemini-2.0-flash-thinking-exp-01-21",
+    model: "gemini-2.0-flash-thinking-exp-01-21", // Убедитесь, что модель актуальна
     safetySettings: [
       {
         category: HarmCategory.HARM_CATEGORY_HARASSMENT,
@@ -112,7 +113,8 @@ export async function transformStory({
     
     return transformedText;
   } catch (error) {
-    console.error('Error transforming story:', error);
-    throw error;
+    console.error('Error transforming story in aiService:', error);
+    // Можно добавить более специфичную обработку ошибок здесь
+    throw new Error('Failed to generate story transformation from AI service');
   }
 } 

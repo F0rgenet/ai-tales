@@ -37,15 +37,32 @@ export default function Home() {
     try {
       setIsLoading(true);
       
-      const result = await transformStory({ text: originalText, replacements, additionalContext });
+      const response = await fetch('/api/transform-story', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: originalText, replacements, additionalContext }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to transform story from API');
+      }
+
+      const data = await response.json();
+      const result = data.transformedText;
       
       setTransformedText(result);
       setCurrentStep(Step.PREVIEW);
       toast.success('Сказка успешно трансформирована!');
     } catch (error) {
-      console.error('Error:', error);
-      
-      toast.error('Произошла ошибка при трансформации сказки');
+      console.error('Error in handleTransform:', error);
+      let toastMessage = 'Произошла ошибка при трансформации сказки';
+      if (error instanceof Error && error.message) {
+        toastMessage = error.message; // Показываем более конкретную ошибку, если есть
+      }
+      toast.error(toastMessage);
     } finally {
       setIsLoading(false);
     }
