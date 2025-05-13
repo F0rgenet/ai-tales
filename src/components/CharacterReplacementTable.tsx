@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 export interface CharacterReplacement {

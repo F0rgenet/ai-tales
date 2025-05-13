@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import toast, { Toaster } from 'react-hot-toast';
 
 import FileTextInput from '@/components/FileTextInput';
