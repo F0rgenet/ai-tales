@@ -19,7 +19,6 @@ function createPrompt(text: string, replacements: CharacterReplacement[]): strin
 """
 ${text}
 """
-
 Пожалуйста, перепиши эту сказку, заменяя следующих персонажей: ${replacementText}.
 
 Важные правила:
@@ -28,6 +27,10 @@ ${text}
 3. Адаптируй грамматику и падежи для новых персонажей, где это необходимо.
 4. Если нужно сделать гендерные изменения (он/она), сделай их соответственно.
 5. Сохрани стиль оригинального текста.
+6. Если переписываешь стихотворные строки - убедись, что везде есть рифма.
+
+Твоя главная задача - тщательно продумать изменившийся контекст сказки и сохранить структуру и последовательность оригинала,
+допустимы небольшие отклонения от сюжета для придания персонажам объёма.
 
 Верни ТОЛЬКО переписанный текст без дополнительных комментариев.
 `;
@@ -63,23 +66,23 @@ export async function transformStory({
   
   // Получаем модель
   const model = genAI.getGenerativeModel({ 
-    model: "gemini-1.5-pro",
+    model: "gemini-2.0-flash-thinking-exp-01-21",
     safetySettings: [
       {
         category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-        threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
       },
       {
         category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-        threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
       },
       {
         category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-        threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
       },
       {
         category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-        threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
       },
     ],
   });
