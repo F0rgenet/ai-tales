@@ -9,18 +9,29 @@ import {
 import { CharacterReplacement } from '@/components/CharacterReplacementTable';
 
 // Функция для создания промпта с инструкциями по замене персонажей
-function createPrompt(text: string, replacements: CharacterReplacement[]): string {
+function createPrompt(text: string, replacements: CharacterReplacement[], additionalContext?: string): string {
   const replacementText = replacements
-    .map(r => `"${r.original}" на "${r.replacement}"`)
+    .map(r => `\"${r.original}\" на \"${r.replacement}\"`)
     .join(', ');
 
-  return `
+  let promptText = `
 Текст сказки:
 """
 ${text}
 """
 Пожалуйста, перепиши эту сказку, заменяя следующих персонажей: ${replacementText}.
+`;
 
+  if (additionalContext && additionalContext.trim() !== '') {
+    promptText += `
+Дополнительный контекст для замены:
+"""
+${additionalContext}
+"""
+`;
+  }
+
+  promptText += `
 Важные правила:
 1. Сохрани общую структуру и сюжет оригинальной сказки.
 2. Замени ТОЛЬКО указанных персонажей, но адаптируй окружающий текст для логичности и связности.
@@ -34,12 +45,14 @@ ${text}
 
 Верни ТОЛЬКО переписанный текст без дополнительных комментариев.
 `;
+  return promptText;
 }
 
 // Интерфейс для параметров трансформации сказки
 interface TransformStoryParams {
   text: string;
   replacements: CharacterReplacement[];
+  additionalContext?: string;
 }
 
 // Интерфейс для настроек AI, чтобы в будущем можно было добавить API ключ через settings
@@ -49,7 +62,8 @@ interface AISettings {
 
 export async function transformStory({ 
   text, 
-  replacements 
+  replacements,
+  additionalContext
 }: TransformStoryParams, 
   settings?: AISettings
 ): Promise<string> {
@@ -88,7 +102,7 @@ export async function transformStory({
   });
 
   // Создаём промпт
-  const prompt = createPrompt(text, replacements);
+  const prompt = createPrompt(text, replacements, additionalContext);
 
   try {
     // Отправляем запрос к модели

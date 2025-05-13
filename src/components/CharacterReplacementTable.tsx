@@ -13,12 +13,18 @@ interface CharacterReplacementTableProps {
   replacements: CharacterReplacement[];
   onReplacementsChange: (replacements: CharacterReplacement[]) => void;
   onSubmit: () => void;
+  additionalContext: string;
+  onAdditionalContextChange: (context: string) => void;
+  isLoading?: boolean;
 }
 
 export default function CharacterReplacementTable({
   replacements,
   onReplacementsChange,
-  onSubmit
+  onSubmit,
+  additionalContext,
+  onAdditionalContextChange,
+  isLoading
 }: CharacterReplacementTableProps) {
   
   const addReplacement = () => {
@@ -52,6 +58,24 @@ export default function CharacterReplacementTable({
         Укажите оригинальных персонажей и их замены
       </p>
       
+      <div className="space-y-2">
+        <label htmlFor="additional-context" className="block text-sm font-medium text-gray-700">
+          Дополнительный контекст (необязательно)
+        </label>
+        <textarea
+          id="additional-context"
+          name="additional-context"
+          rows={3}
+          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          placeholder="Например: Замени всех персонажей в тексте, кроме тех, кто говорит..."
+          value={additionalContext}
+          onChange={(e) => onAdditionalContextChange(e.target.value)}
+        />
+        <p className="text-xs text-gray-500">
+          Этот контекст будет использован для уточнения процесса замены.
+        </p>
+      </div>
+
       <div className="overflow-hidden border border-gray-200 sm:rounded-lg">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -122,12 +146,22 @@ export default function CharacterReplacementTable({
         <button
           type="button"
           onClick={onSubmit}
-          disabled={isSubmitDisabled}
-          className={`px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-            isSubmitDisabled ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+          disabled={isSubmitDisabled || isLoading}
+          className={`flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+            (isSubmitDisabled || isLoading) ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
           }`}
         >
-          Заменить
+          {isLoading ? (
+            <>
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Загрузка...
+            </>
+          ) : (
+            'Заменить'
+          )}
         </button>
       </div>
     </div>

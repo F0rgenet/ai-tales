@@ -21,6 +21,7 @@ export default function Home() {
   const [currentStep, setCurrentStep] = useState<Step>(Step.INPUT_TEXT);
   const [replacements, setReplacements] = useState<CharacterReplacement[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [additionalContext, setAdditionalContext] = useState<string>('');
 
   const handleTextSubmit = (text: string) => {
     setOriginalText(text);
@@ -37,7 +38,7 @@ export default function Home() {
     try {
       setIsLoading(true);
       
-      const result = await transformStory({ text: originalText, replacements });
+      const result = await transformStory({ text: originalText, replacements, additionalContext });
       
       setTransformedText(result);
       setCurrentStep(Step.PREVIEW);
@@ -56,6 +57,7 @@ export default function Home() {
     setOriginalText('');
     setTransformedText('');
     setReplacements([]);
+    setAdditionalContext('');
   };
 
   const renderStep = () => {
@@ -71,6 +73,9 @@ export default function Home() {
               replacements={replacements}
               onReplacementsChange={setReplacements}
               onSubmit={handleTransform}
+              additionalContext={additionalContext}
+              onAdditionalContextChange={setAdditionalContext}
+              isLoading={isLoading}
             />
             
             <div className="flex justify-between pt-4">
