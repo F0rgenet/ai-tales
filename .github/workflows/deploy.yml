@@ -49,7 +49,19 @@ jobs:
           username: ${{ secrets.VDS_USERNAME }}
           key: ${{ secrets.VDS_SSH_KEY }}
           script: |
+            APP_DIR="/home/ai-tales"
+            ENV_FILE_PATH="$APP_DIR/.env.local"
+
+            mkdir -p $APP_DIR
+
+            echo "GOOGLE_AI_API_KEY=${{ secrets.GOOGLE_AI_API_KEY }}" > $ENV_FILE_PATH
+
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ai-tales:latest
             docker stop ai-tales || true
             docker rm ai-tales || true
-            docker run -d --restart always --name ai-tales -p 3000:3000 ${{ secrets.DOCKERHUB_USERNAME }}/ai-tales:latest
+            docker run -d \
+              --restart always \
+              --name ai-tales \
+              -p 3000:3000 \
+              --env-file $ENV_FILE_PATH \
+              ${{ secrets.DOCKERHUB_USERNAME }}/ai-tales:latest

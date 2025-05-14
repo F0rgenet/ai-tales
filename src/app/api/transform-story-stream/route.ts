@@ -12,17 +12,17 @@ export async function POST(request: NextRequest) {
       additionalContext?: string
     };
 
-    // Логируем данные для отладки
+
     console.log(`Длина текста: ${text.length} символов`);
     console.log(`Количество замен: ${replacements.length}`);
     console.log(`Дополнительный контекст: ${additionalContext ? 'есть' : 'отсутствует'}`);
 
-    // Проверка обязательных параметров
+
     if (!text) {
       return Response.json({ error: 'Текст обязателен' }, { status: 400 });
     }
 
-    // Проверяем, что есть либо замены, либо контекст
+
     if (replacements.length === 0 && (!additionalContext || additionalContext.trim() === '')) {
       return Response.json(
         { error: 'Требуется хотя бы одна замена персонажа или дополнительный контекст' },
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Создаем поток для ответа
+
     console.log('Запускаем потоковое преобразование...');
     const stream = await transformStoryStream({ text, replacements, additionalContext });
     

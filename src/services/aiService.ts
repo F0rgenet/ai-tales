@@ -1,19 +1,19 @@
-// \'use client\'; // Удаляем эту строку
 
-import { 
-  GoogleGenerativeAI, 
-  HarmCategory, 
-  HarmBlockThreshold 
+
+import {
+  GoogleGenerativeAI,
+  HarmCategory,
+  HarmBlockThreshold
 } from '@google/generative-ai';
 
 import { CharacterReplacement } from '@/components/CharacterReplacementTable';
 
-// Функция для создания промпта с инструкциями по замене персонажей
+
 function createPrompt(text: string, replacements: CharacterReplacement[], additionalContext?: string): string {
   const replacementText = replacements.length > 0
     ? replacements
-        .map(r => `\\"${r.original}\\" на \\"${r.replacement}\\"`)
-        .join(', ')
+      .map(r => `\\"${r.original}\\" на \\"${r.replacement}\\"`)
+      .join(', ')
     : 'персонажей по своему усмотрению в соответствии с дополнительным контекстом';
 
   let promptText = `
@@ -50,35 +50,35 @@ ${additionalContext}
   return promptText;
 }
 
-// Интерфейс для параметров трансформации сказки
+
 interface TransformStoryParams {
   text: string;
   replacements: CharacterReplacement[];
   additionalContext?: string;
 }
 
-// Интерфейс для настроек AI, чтобы в будущем можно было добавить API ключ через settings
+
 interface AISettings {
   apiKey?: string;
 }
 
-// Инициализация API и модели
+
 function initializeAI(settings?: AISettings) {
-  // Используем API ключ из переменных окружения сервера
+
   const apiKey = process.env.GOOGLE_AI_API_KEY || settings?.apiKey;
-  
-  // Проверяем наличие ключа API
+
+
   if (!apiKey) {
     console.error('Google AI API key is not provided in server environment variables.');
     throw new Error('Google AI API key is not provided');
   }
 
-  // Инициализируем API
+
   const genAI = new GoogleGenerativeAI(apiKey);
-  
-  // Получаем модель
-  const model = genAI.getGenerativeModel({ 
-    model: "gemini-2.0-flash-thinking-exp-01-21", // Убедитесь, что модель актуальна
+
+
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.0-flash-thinking-exp-01-21",
     safetySettings: [
       {
         category: HarmCategory.HARM_CATEGORY_HARASSMENT,
@@ -102,61 +102,61 @@ function initializeAI(settings?: AISettings) {
   return model;
 }
 
-// Функция для трансформации сказки без потока
+
 export async function transformStory(
-  { text, replacements, additionalContext }: TransformStoryParams, 
+  { text, replacements, additionalContext }: TransformStoryParams,
   settings?: AISettings
 ): Promise<string> {
   const model = initializeAI(settings);
-  
-  // Создаём промпт
+
+
   const prompt = createPrompt(text, replacements, additionalContext);
 
   try {
-    // Отправляем запрос к модели
+
     const result = await model.generateContent(prompt);
     const response = result.response;
     const transformedText = response.text();
-    
+
     return transformedText;
   } catch (error) {
     console.error('Error transforming story in aiService:', error);
-    // Можно добавить более специфичную обработку ошибок здесь
+
     throw new Error('Failed to generate story transformation from AI service');
   }
 }
 
-// Функция для потоковой трансформации сказки
+
 export async function transformStoryStream(
   { text, replacements, additionalContext }: TransformStoryParams,
   settings?: AISettings
 ): Promise<ReadableStream<Uint8Array>> {
   const model = initializeAI(settings);
-  
-  // Создаём промпт
+
+
   const prompt = createPrompt(text, replacements, additionalContext);
 
   try {
-    // Создаем поток для ответа
+
     const encoder = new TextEncoder();
-    
-    // Создаем новый ReadableStream
+
+
     return new ReadableStream({
       async start(controller) {
         try {
-          // Используем потоковый режим модели
+
           const streamingResult = await model.generateContentStream(prompt);
-          
-          // Обрабатываем каждый чанк
+
+
           for await (const chunk of streamingResult.stream) {
             const chunkText = chunk.text();
             if (chunkText) {
-              // Отправляем данные в поток
+
               controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: chunkText })}\n\n`));
             }
           }
-          
-          // Завершаем поток
+
+
           controller.enqueue(encoder.encode('data: [DONE]\n\n'));
           controller.close();
         } catch (error) {

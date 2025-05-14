@@ -26,7 +26,7 @@ export default function CharacterReplacementTable({
   onAdditionalContextChange,
   isLoading
 }: CharacterReplacementTableProps) {
-  
+
   const addReplacement = () => {
     const newReplacement: CharacterReplacement = {
       id: Date.now().toString(),
@@ -37,7 +37,7 @@ export default function CharacterReplacementTable({
   };
 
   const updateReplacement = (id: string, field: 'original' | 'replacement', value: string) => {
-    const updatedReplacements = replacements.map(rep => 
+    const updatedReplacements = replacements.map(rep =>
       rep.id === id ? { ...rep, [field]: value } : rep
     );
     onReplacementsChange(updatedReplacements);
@@ -53,7 +53,7 @@ export default function CharacterReplacementTable({
   ) && additionalContext.trim() === '';
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
@@ -63,8 +63,8 @@ export default function CharacterReplacementTable({
       <p className="text-sm text-gray-600">
         Укажите оригинальных персонажей и их замены или введите дополнительный контекст
       </p>
-      
-      <motion.div 
+
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
@@ -87,7 +87,7 @@ export default function CharacterReplacementTable({
         </p>
       </motion.div>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3, duration: 0.5 }}
@@ -109,7 +109,7 @@ export default function CharacterReplacementTable({
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {replacements.map((replacement, index) => (
-              <motion.tr 
+              <motion.tr
                 key={replacement.id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -155,7 +155,7 @@ export default function CharacterReplacementTable({
           </tbody>
         </table>
       </motion.div>
-      
+
       <div className="flex justify-between">
         <motion.button
           whileHover={{ scale: 1.05 }}
@@ -167,16 +167,15 @@ export default function CharacterReplacementTable({
           <PlusIcon className="-ml-1 mr-2 h-5 w-5 text-gray-500" />
           Добавить персонажа
         </motion.button>
-        
+
         <motion.button
           whileHover={{ scale: isSubmitDisabled ? 1 : 1.05 }}
           whileTap={{ scale: isSubmitDisabled ? 1 : 0.95 }}
           type="button"
           onClick={onSubmit}
           disabled={isSubmitDisabled || isLoading}
-          className={`flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-            (isSubmitDisabled || isLoading) ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
-          }`}
+          className={`flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${(isSubmitDisabled || isLoading) ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+            }`}
         >
           {isLoading ? (
             <>

@@ -22,10 +22,10 @@ export default function Home() {
   const [replacements, setReplacements] = useState<CharacterReplacement[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [additionalContext, setAdditionalContext] = useState<string>('');
-  
-  // Для обработки потоковых данных
+
+
   useEffect(() => {
-    // Сбрасываем потоковый текст при перезапуске
+
     if (!isLoading) {
       setStreamingText('');
     }
@@ -34,7 +34,7 @@ export default function Home() {
   const handleTextSubmit = (text: string) => {
     setOriginalText(text);
     setCurrentStep(Step.REPLACE_CHARACTERS);
-    // Добавляем пустую строку для замены
+
     setReplacements([{
       id: Date.now().toString(),
       original: '',
@@ -46,17 +46,17 @@ export default function Home() {
     try {
       setIsLoading(true);
       setStreamingText('');
-      
-      // Используем обычный запрос или потоковый в зависимости от поддержки EventSource
+
+
       if (typeof EventSource !== 'undefined') {
-        // Используем потоковую обработку
+
         handleStreamingTransform();
       } else {
-        // Для браузеров, не поддерживающих EventSource, используем обычный запрос
+
         handleRegularTransform();
       }
-      
-      // Сразу переходим к предпросмотру для отображения процесса
+
+
       setCurrentStep(Step.PREVIEW);
     } catch (error) {
       console.error('Error in handleTransform:', error);
@@ -69,10 +69,10 @@ export default function Home() {
     }
   };
 
-  // Функция для обработки потокового ответа
+
   const handleStreamingTransform = async () => {
     try {
-      // Используем fetch для создания запроса к потоковому API
+
       console.log('Отправка запроса к API потоковой трансформации...');
       const response = await fetch('/api/transform-story-stream', {
         method: 'POST',
@@ -97,19 +97,19 @@ export default function Home() {
         throw new Error('Сервер вернул пустой ответ');
       }
 
-      // Создаем Reader для чтения потока
+
       const reader = response.body.getReader();
       console.log('Получен поток данных, начинаем чтение...');
 
-      // Функция для чтения и обработки чанков
+
       const processStream = async () => {
         let accumulatedText = '';
-        
+
         try {
           while (true) {
             console.log('Чтение чанка данных...');
             const { done, value } = await reader.read();
-            
+
             if (done) {
               console.log('Поток завершен естественным образом.');
               setIsLoading(false);
@@ -120,39 +120,40 @@ export default function Home() {
               }
               break;
             }
-            
-            // Декодирование и обработка чанка
+
+
             const chunk = new TextDecoder().decode(value);
             console.log('Получен чанк данных:', chunk.slice(0, 50) + '...');
             const lines = chunk.split('\n\n');
-            
+
             for (const line of lines) {
               if (line.startsWith('data: ')) {
-                const data = line.slice(6); // Убираем 'data: '
+                const data = line.slice(6);
                 console.log('Обработка данных:', data.slice(0, 50) + '...');
-                
+
                 if (data === '[DONE]') {
                   console.log('Получен маркер завершения потока.');
                   setIsLoading(false);
                   if (accumulatedText) {
                     setTransformedText(accumulatedText);
+                    toast.success('Сказка успешно трансформирована!');
                   } else {
                     toast.error('Получен пустой результат.');
                   }
                   break;
                 }
-                
+
                 try {
                   const parsedData = JSON.parse(data);
-                  
+
                   if (parsedData.error) {
                     console.error('Получена ошибка в потоке:', parsedData.error);
                     throw new Error(parsedData.error);
                   }
-                  
+
                   if (parsedData.chunk) {
                     console.log('Получен фрагмент текста длиной:', parsedData.chunk.length);
-                    // Добавляем к накопленному тексту
+
                     accumulatedText += parsedData.chunk;
                     setStreamingText(accumulatedText);
                   } else {
@@ -162,7 +163,7 @@ export default function Home() {
                   console.error('Failed to parse streaming data:', e);
                   setIsLoading(false);
                   toast.error(`Ошибка при обработке данных: ${e instanceof Error ? e.message : 'Неизвестная ошибка'}`);
-                  // Завершаем обработку, если есть ошибка
+
                   return;
                 }
               }
@@ -174,19 +175,19 @@ export default function Home() {
           toast.error(`Ошибка при обработке потока данных: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`);
         }
       };
-      
-      // Запускаем обработку потока
+
+
       processStream();
     } catch (error) {
       console.error('Error in handleStreamingTransform:', error);
       setIsLoading(false);
       toast.error(`Ошибка при потоковой обработке: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`);
-      // Переходим обратно к шагу с заменами персонажей
+
       setCurrentStep(Step.REPLACE_CHARACTERS);
     }
   };
 
-  // Функция для обычного запроса (запасной вариант)
+
   const handleRegularTransform = async () => {
     try {
       console.log('Отправка запроса к стандартному API трансформации...');
@@ -210,11 +211,11 @@ export default function Home() {
       }
 
       const data = await response.json();
-      
+
       if (!data.transformedText) {
         throw new Error('Сервер вернул ответ без преобразованного текста');
       }
-      
+
       console.log('Получен ответ с преобразованным текстом длиной:', data.transformedText.length);
       setTransformedText(data.transformedText);
       setIsLoading(false);
@@ -223,7 +224,7 @@ export default function Home() {
       console.error('Error in handleRegularTransform:', error);
       setIsLoading(false);
       toast.error(`Ошибка при обработке: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`);
-      // Переходим обратно к шагу с заменами персонажей
+
       setCurrentStep(Step.REPLACE_CHARACTERS);
     }
   };
@@ -250,7 +251,7 @@ export default function Home() {
             <FileTextInput onTextSubmit={handleTextSubmit} />
           </motion.div>
         );
-      
+
       case Step.REPLACE_CHARACTERS:
         return (
           <motion.div
@@ -268,7 +269,7 @@ export default function Home() {
               onAdditionalContextChange={setAdditionalContext}
               isLoading={isLoading}
             />
-            
+
             <div className="flex justify-between pt-4">
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -281,7 +282,7 @@ export default function Home() {
             </div>
           </motion.div>
         );
-      
+
       case Step.PREVIEW:
         return (
           <motion.div
@@ -297,7 +298,7 @@ export default function Home() {
               streamingText={streamingText}
               isLoading={isLoading}
             />
-            
+
             <div className="flex justify-between pt-4">
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -320,7 +321,7 @@ export default function Home() {
             </div>
           </motion.div>
         );
-      
+
       default:
         return null;
     }
@@ -329,8 +330,8 @@ export default function Home() {
   return (
     <div className="container mx-auto px-4 py-8 min-h-screen flex flex-col">
       <Toaster position="top-right" />
-      
-      <motion.header 
+
+      <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -341,14 +342,14 @@ export default function Home() {
           Трансформируйте сказки, заменяя персонажей с помощью искусственного интеллекта
         </p>
       </motion.header>
-      
+
       <main className="flex-grow">
         <AnimatePresence mode="wait">
           {renderStep()}
         </AnimatePresence>
       </main>
-      
-      <motion.footer 
+
+      <motion.footer
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.8, duration: 0.5 }}

@@ -29,10 +29,10 @@ export default function StoryPreview({
     document.body.removeChild(element);
   };
 
-  // Определим, какой текст показывать
+
   const displayText = isLoading ? streamingText : transformedText;
   
-  // Определим статус текста для отображения пользователю
+
   const getTextStatus = () => {
     if (isLoading && !streamingText) {
       return 'Ожидание ответа от сервера...';

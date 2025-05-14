@@ -2,11 +2,11 @@
 const nextConfig = {
   reactStrictMode: true,
   eslint: {
-    // Отключаем проверку ESLint при сборке
+
     ignoreDuringBuilds: true,
   },
   webpack: (config, { isServer }) => {
-    // Чтобы убедиться, что pdf.worker доступен для клиентской сборки
+
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -16,14 +16,14 @@ const nextConfig = {
         canvas: false,
       };
       
-      // Полностью исключаем загрузку WASM файлов
+
       config.module.rules.push({
         test: /\.(wasm)$/i,
         type: 'javascript/auto',
         loader: 'ignore-loader',
       });
       
-      // Исключаем импорт worker файлов
+
       config.module.rules.push({
         test: /pdf\.worker\.(min\.)?(m)?js/,
         loader: 'file-loader',
@@ -36,7 +36,7 @@ const nextConfig = {
 
     return config;
   },
-  // Разрешаем импорт worker.mjs файлов
+
   transpilePackages: ['pdfjs-dist'],
 };
 
