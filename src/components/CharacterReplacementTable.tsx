@@ -1,6 +1,7 @@
 'use client';
 
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { motion } from 'framer-motion';
 
 export interface CharacterReplacement {
   id: string;
@@ -47,19 +48,30 @@ export default function CharacterReplacementTable({
     onReplacementsChange(updatedReplacements);
   };
 
-  const isSubmitDisabled = replacements.length === 0 || 
-    replacements.some(rep => !rep.original.trim() || !rep.replacement.trim());
+  const isSubmitDisabled = (
+    replacements.length === 0 || replacements.some(rep => !rep.original.trim() || !rep.replacement.trim())
+  ) && additionalContext.trim() === '';
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-6">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="w-full max-w-3xl mx-auto space-y-6"
+    >
       <h2 className="text-xl font-bold text-gray-800">Замена персонажей</h2>
       <p className="text-sm text-gray-600">
-        Укажите оригинальных персонажей и их замены
+        Укажите оригинальных персонажей и их замены или введите дополнительный контекст
       </p>
       
-      <div className="space-y-2">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+        className="space-y-2"
+      >
         <label htmlFor="additional-context" className="block text-sm font-medium text-gray-700">
-          Дополнительный контекст (необязательно)
+          Дополнительный контекст
         </label>
         <textarea
           id="additional-context"
@@ -71,11 +83,16 @@ export default function CharacterReplacementTable({
           onChange={(e) => onAdditionalContextChange(e.target.value)}
         />
         <p className="text-xs text-gray-500">
-          Этот контекст будет использован для уточнения процесса замены.
+          Можно ввести только контекст или указать конкретные замены ниже.
         </p>
-      </div>
+      </motion.div>
 
-      <div className="overflow-hidden border border-gray-200 sm:rounded-lg">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+        className="overflow-hidden border border-gray-200 sm:rounded-lg"
+      >
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -91,8 +108,13 @@ export default function CharacterReplacementTable({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {replacements.map((replacement) => (
-              <tr key={replacement.id}>
+            {replacements.map((replacement, index) => (
+              <motion.tr 
+                key={replacement.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 * index, duration: 0.3 }}
+              >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <input
                     type="text"
@@ -112,37 +134,43 @@ export default function CharacterReplacementTable({
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => removeReplacement(replacement.id)}
                     className="text-red-600 hover:text-red-900"
                   >
                     <TrashIcon className="h-5 w-5" />
-                  </button>
+                  </motion.button>
                 </td>
-              </tr>
+              </motion.tr>
             ))}
             {replacements.length === 0 && (
               <tr>
                 <td colSpan={3} className="px-6 py-4 text-center text-sm text-gray-500">
-                  Добавьте персонажей для замены
+                  Добавьте персонажей для замены или используйте только контекст
                 </td>
               </tr>
             )}
           </tbody>
         </table>
-      </div>
+      </motion.div>
       
       <div className="flex justify-between">
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           type="button"
           onClick={addReplacement}
           className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           <PlusIcon className="-ml-1 mr-2 h-5 w-5 text-gray-500" />
           Добавить персонажа
-        </button>
+        </motion.button>
         
-        <button
+        <motion.button
+          whileHover={{ scale: isSubmitDisabled ? 1 : 1.05 }}
+          whileTap={{ scale: isSubmitDisabled ? 1 : 0.95 }}
           type="button"
           onClick={onSubmit}
           disabled={isSubmitDisabled || isLoading}
@@ -161,8 +189,8 @@ export default function CharacterReplacementTable({
           ) : (
             'Заменить'
           )}
-        </button>
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 } 

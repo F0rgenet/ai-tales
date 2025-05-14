@@ -13,8 +13,17 @@ export async function POST(request: Request) {
     const body: RequestBody = await request.json();
     const { text, replacements, additionalContext } = body;
 
-    if (!text || !replacements) {
-      return NextResponse.json({ error: 'Missing required fields: text and replacements' }, { status: 400 });
+    // Проверка на наличие текста
+    if (!text) {
+      return NextResponse.json({ error: 'Текст обязателен' }, { status: 400 });
+    }
+
+    // Проверяем, что есть либо замены, либо контекст
+    if (replacements.length === 0 && (!additionalContext || additionalContext.trim() === '')) {
+      return NextResponse.json(
+        { error: 'Требуется хотя бы одна замена персонажа или дополнительный контекст' },
+        { status: 400 }
+      );
     }
 
     const transformedText = await transformStory({

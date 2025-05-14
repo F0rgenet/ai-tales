@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { DocumentTextIcon, ArrowUpTrayIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { motion } from 'framer-motion';
 
 // Определяем поддерживаемые форматы и сопоставления цветов
 const SUPPORTED_FORMATS = [
@@ -204,8 +205,16 @@ export default function FileTextInput({ onTextSubmit }: FileTextInputProps) {
   const currentColorClasses = currentFormatColor ? getColorClasses(currentFormatColor) : null;
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-4">
-      <div 
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="w-full max-w-3xl mx-auto space-y-4"
+    >
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.4 }}
         className={`border-2 border-dashed rounded-lg p-6 transition-colors ${
           isDragging ? 'border-blue-400 bg-blue-50' : 'border-gray-300'
         }`}
@@ -214,26 +223,37 @@ export default function FileTextInput({ onTextSubmit }: FileTextInputProps) {
         onDrop={handleDrop}
       >
         <div className="flex flex-col items-center justify-center space-y-4">
-          <div className="p-3 bg-blue-100 rounded-full">
+          <motion.div 
+            animate={{ 
+              rotate: isDragging ? [0, -10, 10, -10, 0] : 0 
+            }}
+            transition={{ duration: 0.5 }}
+            className="p-3 bg-blue-100 rounded-full"
+          >
             <DocumentTextIcon className="w-8 h-8 text-blue-500" />
-          </div>
+          </motion.div>
           <div className="text-center">
             <p className="text-lg font-medium">Перетащите файл или</p>
             <div className="mt-1 flex flex-wrap justify-center gap-2">
-              {SUPPORTED_FORMATS.map((format) => {
+              {SUPPORTED_FORMATS.map((format, index) => {
                 const colorClasses = getColorClasses(format.color);
                 return (
-                  <span 
-                    key={format.ext} 
+                  <motion.span 
+                    key={format.ext}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 * index, duration: 0.3 }}
                     className={`text-xs font-medium px-2 py-1 rounded-md ${colorClasses.bg} ${colorClasses.text}`}
                   >
                     {format.label}
-                  </span>
+                  </motion.span>
                 );
               })}
             </div>
           </div>
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             type="button"
             onClick={handleButtonClick}
             className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -250,7 +270,7 @@ export default function FileTextInput({ onTextSubmit }: FileTextInputProps) {
               )}
               <span>{isLoading ? 'Обработка...' : 'Выбрать файл'}</span>
             </div>
-          </button>
+          </motion.button>
           <input
             type="file"
             ref={fileInputRef}
@@ -261,7 +281,12 @@ export default function FileTextInput({ onTextSubmit }: FileTextInputProps) {
           />
 
           {currentFile && (
-            <div className="flex items-center mt-2 p-2 rounded-md bg-gray-50">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="flex items-center mt-2 p-2 rounded-md bg-gray-50"
+            >
               <CheckCircleIcon className="h-5 w-5 mr-2 text-green-500" />
               <span className="text-sm text-gray-700 mr-1">
                 {currentFile.name}
@@ -271,18 +296,27 @@ export default function FileTextInput({ onTextSubmit }: FileTextInputProps) {
                   {currentFile.format}
                 </span>
               )}
-            </div>
+            </motion.div>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {errorMessage && (
-        <div className="p-3 bg-red-100 text-red-700 rounded-md">
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="p-3 bg-red-100 text-red-700 rounded-md"
+        >
           {errorMessage}
-        </div>
+        </motion.div>
       )}
 
-      <div className="space-y-2">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3, duration: 0.4 }}
+        className="space-y-2"
+      >
         <label htmlFor="text-input" className="block text-sm font-medium text-gray-700">
           Или введите текст напрямую:
         </label>
@@ -295,10 +329,12 @@ export default function FileTextInput({ onTextSubmit }: FileTextInputProps) {
           placeholder="Вставьте или введите текст здесь..."
           disabled={isLoading}
         />
-      </div>
+      </motion.div>
 
       <div className="flex justify-end">
-        <button
+        <motion.button
+          whileHover={{ scale: text.trim() && !isLoading ? 1.05 : 1 }}
+          whileTap={{ scale: text.trim() && !isLoading ? 0.95 : 1 }}
           type="button"
           onClick={handleSubmit}
           disabled={!text.trim() || isLoading}
@@ -307,8 +343,8 @@ export default function FileTextInput({ onTextSubmit }: FileTextInputProps) {
           }`}
         >
           Продолжить
-        </button>
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 }

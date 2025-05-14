@@ -10,9 +10,11 @@ import { CharacterReplacement } from '@/components/CharacterReplacementTable';
 
 // Функция для создания промпта с инструкциями по замене персонажей
 function createPrompt(text: string, replacements: CharacterReplacement[], additionalContext?: string): string {
-  const replacementText = replacements
-    .map(r => `\\"${r.original}\\" на \\"${r.replacement}\\"`)
-    .join(', ');
+  const replacementText = replacements.length > 0
+    ? replacements
+        .map(r => `\\"${r.original}\\" на \\"${r.replacement}\\"`)
+        .join(', ')
+    : 'персонажей по своему усмотрению в соответствии с дополнительным контекстом';
 
   let promptText = `
 Текст сказки:
@@ -60,15 +62,10 @@ interface AISettings {
   apiKey?: string;
 }
 
-export async function transformStory({ 
-  text, 
-  replacements,
-  additionalContext
-}: TransformStoryParams, 
-  settings?: AISettings // settings может быть удален, если ключ всегда берется из process.env
-): Promise<string> {
+// Инициализация API и модели
+function initializeAI(settings?: AISettings) {
   // Используем API ключ из переменных окружения сервера
-  const apiKey = process.env.GOOGLE_AI_API_KEY || settings?.apiKey; // Изменяем здесь
+  const apiKey = process.env.GOOGLE_AI_API_KEY || settings?.apiKey;
   
   // Проверяем наличие ключа API
   if (!apiKey) {
@@ -102,6 +99,16 @@ export async function transformStory({
     ],
   });
 
+  return model;
+}
+
+// Функция для трансформации сказки без потока
+export async function transformStory(
+  { text, replacements, additionalContext }: TransformStoryParams, 
+  settings?: AISettings
+): Promise<string> {
+  const model = initializeAI(settings);
+  
   // Создаём промпт
   const prompt = createPrompt(text, replacements, additionalContext);
 
@@ -116,5 +123,54 @@ export async function transformStory({
     console.error('Error transforming story in aiService:', error);
     // Можно добавить более специфичную обработку ошибок здесь
     throw new Error('Failed to generate story transformation from AI service');
+  }
+}
+
+// Функция для потоковой трансформации сказки
+export async function transformStoryStream(
+  { text, replacements, additionalContext }: TransformStoryParams,
+  settings?: AISettings
+): Promise<ReadableStream<Uint8Array>> {
+  const model = initializeAI(settings);
+  
+  // Создаём промпт
+  const prompt = createPrompt(text, replacements, additionalContext);
+
+  try {
+    // Создаем поток для ответа
+    const encoder = new TextEncoder();
+    
+    // Создаем новый ReadableStream
+    return new ReadableStream({
+      async start(controller) {
+        try {
+          // Используем потоковый режим модели
+          const streamingResult = await model.generateContentStream(prompt);
+          
+          // Обрабатываем каждый чанк
+          for await (const chunk of streamingResult.stream) {
+            const chunkText = chunk.text();
+            if (chunkText) {
+              // Отправляем данные в поток
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk: chunkText })}\n\n`));
+            }
+          }
+          
+          // Завершаем поток
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          controller.close();
+        } catch (error) {
+          console.error('Error in streaming response:', error);
+          const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify({ error: `Ошибка при генерации текста: ${errorMessage}` })}\n\n`)
+          );
+          controller.close();
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error setting up stream in aiService:', error);
+    throw new Error('Failed to setup streaming for story transformation');
   }
 } 
