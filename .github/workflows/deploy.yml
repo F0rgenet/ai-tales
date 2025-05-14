@@ -11,6 +11,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            /.next/cache
+            ${{ github.workspace }}/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('/package-lock.json') }}-${{ hashFiles('/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('/package-lock.json') }}-
+
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -25,7 +36,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: forgenet/ai-tales:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/ai-tales:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -38,7 +49,7 @@ jobs:
           username: ${{ secrets.VDS_USERNAME }}
           key: ${{ secrets.VDS_SSH_KEY }}
           script: |
-            docker pull forgenet/ai-tales:latest
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ai-tales:latest
             docker stop ai-tales || true
             docker rm ai-tales || true
-            docker run -d --restart always --name ai-tales -p 3000:3000 forgenet/ai-tales:latest
+            docker run -d --restart always --name ai-tales -p 3000:3000 ${{ secrets.DOCKERHUB_USERNAME }}/ai-tales:latest
