@@ -6,7 +6,6 @@ import toast, { Toaster } from 'react-hot-toast';
 import FileTextInput from '@/components/FileTextInput';
 import CharacterReplacementTable, { CharacterReplacement } from '@/components/CharacterReplacementTable';
 import StoryPreview from '@/components/StoryPreview';
-import { transformStory } from '@/services/aiService';
 
 enum Step {
   INPUT_TEXT,
